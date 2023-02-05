@@ -17,8 +17,6 @@ text_direction_steps = []
 text_direction_durations = []
 text_direction_distances = []
 
-
-
 ################
 ## PARAMETERS ##
 ################
@@ -33,11 +31,20 @@ origin_loc_encoded = urllib.parse.quote(origin_loc)
 dest_loc_encoded = urllib.parse.quote(dest_loc)
 transportation_mode_encoded = urllib.parse.quote(transportation_mode)
 
+# limited to 8192 characters
 maps_req_url = "https://maps.googleapis.com/maps/api/directions/json?" \
                "origin=" + origin_loc_encoded + \
                "&destination=" + dest_loc_encoded + \
                "&mode=" + transportation_mode_encoded + \
                "&key=" + gmaps_api_key
+
+# # # https://developers.google.com/maps/documentation/directions/get-directions
+# avoid avoid=tolls|highways|ferries.
+# departure_time
+# language ~> https://developers.google.com/maps/faq#languagesupport
+# mode=driving|walking|bicycling|transit
+# transit_mode=bus|subway|train|tram|rail
+# units=metric|imperial
 
 payload = {}
 headers = {}
@@ -88,32 +95,3 @@ file.close()
 # duration
 # html_instructions (TEXT)
 # travel_mode
-
-# # # # # # # ~> ~>
-# import googlemaps
-# from datetime import datetime
-
-#
-# gmaps = googlemaps.Client(key=gmaps_key)
-#
-# # Geocoding an address
-# # geocode_result = gmaps.geocode('1600 Amphitheatre Parkway, Mountain View, CA')
-#
-# # Look up an address with reverse geocoding
-# # reverse_geocode_result = gmaps.reverse_geocode((40.714224, -73.961452))
-#
-# # Request directions via public transit
-# now = datetime.now()
-# directions_result = gmaps.directions("Sydney Town Hall",
-#                                      "Parramatta, NSW",
-#                                      mode="transit",
-#                                      departure_time=now,
-#                                      transit_mode="bus")
-#
-# # Validate an address with address validation
-# # addressvalidation_result = gmaps.addressvalidation(['1600 Amphitheatre Pk'],
-# #                                                     regionCode='US',
-# #                                                     locality='Mountain View',
-# #                                                     enableUspsCass=True)
-#
-# print(directions_result)
