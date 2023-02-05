@@ -1,14 +1,98 @@
-# import googlemaps
-# from datetime import datetime
 import os
 from dotenv import load_dotenv
+
 import requests
+
 import json
 import urllib.parse
 
-#
+####################
+## INITIALIZATION ##
+####################
 load_dotenv()
-gmaps_key = os.getenv('GOOGLE_MAPS_API_KEY')
+gmaps_api_key = os.getenv('GOOGLE_MAPS_API_KEY')
+file = open('directions_output.html', 'w')
+text_directions = []
+text_direction_steps = []
+text_direction_durations = []
+text_direction_distances = []
+
+
+
+################
+## PARAMETERS ##
+################
+origin_loc = "3734 Meadow Spring Drive, Sugar Land, Texas"
+dest_loc = "First Colony Mall, Southwest Freeway, Sugar Land, TX"
+transportation_mode = "walking"
+
+##############
+## ENCODING ##
+##############
+origin_loc_encoded = urllib.parse.quote(origin_loc)
+dest_loc_encoded = urllib.parse.quote(dest_loc)
+transportation_mode_encoded = urllib.parse.quote(transportation_mode)
+
+maps_req_url = "https://maps.googleapis.com/maps/api/directions/json?" \
+               "origin=" + origin_loc_encoded + \
+               "&destination=" + dest_loc_encoded + \
+               "&mode=" + transportation_mode_encoded + \
+               "&key=" + gmaps_api_key
+
+payload = {}
+headers = {}
+
+#############
+## REQUEST ##
+#############
+response = requests.request("GET", maps_req_url, headers=headers, data=payload)
+# print(response.text)
+
+#############
+## PARSING ##
+#############
+output = json.loads(response.text)
+num_direction_steps = len(output["routes"][0]["legs"][0]["steps"]) # num of total directions
+travel_mode = output["routes"][0]["legs"][0]["steps"][0]["travel_mode"]
+total_distance = output["routes"][0]["legs"][0]["distance"]["text"]
+total_duration = output["routes"][0]["legs"][0]["duration"]["text"]
+
+for direction_step in range(num_direction_steps): # recording information about each direction step
+    text_direction_steps.append(output["routes"][0]["legs"][0]["steps"][direction_step]["html_instructions"])
+    text_direction_durations.append(output["routes"][0]["legs"][0]["steps"][direction_step]["duration"]["text"])
+    text_direction_distances.append(output["routes"][0]["legs"][0]["steps"][direction_step]["distance"]["text"])
+
+#################
+## File Output ##
+#################
+file.write('<h1>' + "Travel Directions" + '</h1>')
+file.write('<small><em>' + "Traveling by: " + travel_mode + '<em></small>')
+file.write('<h4><em>' + "Total Trip Distance: " + total_distance + '<em></h4>')
+file.write('<h4><em>' + "Total Trip Duration: " + total_duration + '<em></h4>')
+
+for text_direction_idx in range(len(text_direction_steps)):
+    file.write('<p>'
+               + str(text_direction_idx + 1) + ". "
+               + "<" + text_direction_distances[text_direction_idx] + "> "
+               + text_direction_steps[text_direction_idx]
+               + " ~ " + text_direction_durations[text_direction_idx]
+               + '<p>')
+
+file.close()
+
+# total distance
+# total duration
+
+# for each step of the project
+# distance
+# duration
+# html_instructions (TEXT)
+# travel_mode
+
+# # # # # # # ~> ~>
+# import googlemaps
+# from datetime import datetime
+
 #
 # gmaps = googlemaps.Client(key=gmaps_key)
 #
@@ -33,39 +117,3 @@ gmaps_key = os.getenv('GOOGLE_MAPS_API_KEY')
 # #                                                     enableUspsCass=True)
 #
 # print(directions_result)
-
-file = open('directions_output.html', 'w')
-
-source_loc = "3734 Meadow Spring Drive, Sugar Land, Texas"
-dest_loc = "First Colony Mall, Southwest Freeway, Sugar Land, TX"
-
-source_loc_encoded = urllib.parse.quote(source_loc)
-dest_loc_encoded = urllib.parse.quote(dest_loc)
-
-url = "https://maps.googleapis.com/maps/api/directions/json?" \
-      "origin=" + source_loc_encoded + \
-      "&destination=" + dest_loc_encoded + \
-      "&mode" \
-      "=driving&key=" + gmaps_key
-
-payload={}
-headers = {}
-
-response = requests.request("GET", url, headers=headers, data=payload)
-print(response.text)
-
-output = json.loads(response.text)
-
-directions = []
-num_directions = len(output["routes"][0]["legs"][0]["steps"])
-for x in range(num_directions):
-    directions.append(output["routes"][0]["legs"][0]["steps"][x]["html_instructions"])
-
-print(directions)
-print("Your distance is:", output["routes"][0]["legs"][0]["distance"]["text"])
-print("Your trip will take:", output["routes"][0]["legs"][0]["duration"]["text"])
-
-for y in range(len(directions)):
-    file.write(directions[y] + '<br>')
-
-file.close()
