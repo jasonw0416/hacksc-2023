@@ -20,9 +20,9 @@ text_direction_distances = []
 ################
 ## PARAMETERS ##
 ################
-origin_loc = "USC"
-dest_loc = "UoSC"
-transportation_mode = "driving"
+origin_loc = "3734 Meadow Spring Drive, Sugar Land, Texas"
+dest_loc = "First Colony Mall, Southwest Freeway, Sugar Land, TX"
+transportation_mode = "walking"
 
 ##############
 ## ENCODING ##
