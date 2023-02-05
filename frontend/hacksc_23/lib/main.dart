@@ -74,8 +74,7 @@ class _WrapperState extends State<Wrapper> {
     String copyJson = _receivedJson ?? '';
     String cleanJson = copyJson
         .trim()
-        .replaceFirst('Sent from your Twilio trial account - SOF ', '')
-        .replaceFirst('} EOF', '}');
+        .replaceFirst('Sent from your Twilio trial account - ', '');
     if (cleanJson.isEmpty) {
       setState(() {
         _directions = const Text('');
@@ -87,49 +86,46 @@ class _WrapperState extends State<Wrapper> {
 
     setState(() {
       _directions = Padding(
-        padding: EdgeInsets.all(25),
-        child: Container(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Row(
-                children: [
-                  Text(
-                    '${msg['total_time']}',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
+        padding: const EdgeInsets.all(25),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Row(
+              children: [
+                Text(
+                  '${msg['t_time']}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
                   ),
-                  Text(' (${msg['total_dist']})',
-                      style: const TextStyle(
-                        color: Colors.white54,
-                      )),
+                ),
+                Text(' (${msg['t_dist']})',
+                    style: const TextStyle(
+                      color: Colors.white54,
+                    )),
+              ],
+            ),
+            const SizedBox(
+              height: 25,
+            ),
+            for (var step in msg['steps'])
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    '${step['v']}',
+                    style: const TextStyle(
+                        fontSize: 22, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    '${step['d']}',
+                    style: const TextStyle(fontSize: 16, color: Colors.white54),
+                  ),
+                  const SizedBox(
+                    height: 25,
+                  ),
                 ],
               ),
-              const SizedBox(
-                height: 25,
-              ),
-              for (var step in msg['steps'])
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      '${step['direction']}',
-                      style: const TextStyle(
-                          fontSize: 22, fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      '${step['dist']}',
-                      style:
-                          const TextStyle(fontSize: 16, color: Colors.white54),
-                    ),
-                    const SizedBox(
-                      height: 25,
-                    ),
-                  ],
-                ),
-            ],
-          ),
+          ],
         ),
       );
     });
@@ -138,6 +134,9 @@ class _WrapperState extends State<Wrapper> {
   /* MESSAGE LISTENING */
   final Telephony telephony = Telephony.instance;
   void _startListening() async {
+    setState(() {
+      _directions = _defaultDirections;
+    });
     sleep(Duration(seconds: 5));
     try {
       bool? permissionsGranted = await telephony.requestPhoneAndSmsPermissions;
@@ -202,7 +201,7 @@ class _WrapperState extends State<Wrapper> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              const SizedBox(height: 75),
+              const SizedBox(height: 52),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
@@ -319,7 +318,7 @@ class _WrapperState extends State<Wrapper> {
                   ),
                 ),
               ),
-              const SizedBox(height: 25),
+              const SizedBox(height: 22),
 
               /* SUBMIT DIRECTIONS FORM */
               Padding(
@@ -331,7 +330,7 @@ class _WrapperState extends State<Wrapper> {
                         begin: Alignment.centerLeft,
                         end: Alignment.centerRight,
                       ),
-                      borderRadius: BorderRadius.all(Radius.circular(12))),
+                      borderRadius: BorderRadius.all(Radius.circular(100))),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
@@ -342,7 +341,6 @@ class _WrapperState extends State<Wrapper> {
                               '{"start": "${startPointController.text}", "destination": "${destinationController.text}", "mode": "${_transType[_selectedTransType].toLowerCase()}"}';
 
                           _pushToText(json, phoneNumber);
-                          _directions = _defaultDirections;
                           _startListening();
                         },
                         child: const Text(
@@ -355,7 +353,7 @@ class _WrapperState extends State<Wrapper> {
                   ),
                 ),
               ),
-              const SizedBox(height: 15),
+              const SizedBox(height: 22),
             ],
           ),
         ),
