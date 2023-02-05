@@ -20,9 +20,9 @@ text_direction_distances = []
 ################
 ## PARAMETERS ##
 ################
-origin_loc = "3734 Meadow Spring Drive, Sugar Land, Texas"
-dest_loc = "First Colony Mall, Southwest Freeway, Sugar Land, TX"
-transportation_mode = "walking"
+origin_loc = "USC"
+dest_loc = "UoSC"
+transportation_mode = "driving"
 
 ##############
 ## ENCODING ##
@@ -59,12 +59,21 @@ response = requests.request("GET", maps_req_url, headers=headers, data=payload)
 ## PARSING ##
 #############
 output = json.loads(response.text)
-num_direction_steps = len(output["routes"][0]["legs"][0]["steps"]) # num of total directions
+
+response_status = output["status"]  # NOT_FOUND or OK
+if response_status == "NOT_FOUND":
+    print("One or more of the locations entered are incorrect. ")
+    print("Try being more general / specific with your locations and make sure the names are entered correctly! ")
+    exit()
+
+num_direction_steps = len(output["routes"][0]["legs"][0]["steps"])  # num of total directions
+# ^^ IndexError: list index out of range if theres an error!
+
 travel_mode = output["routes"][0]["legs"][0]["steps"][0]["travel_mode"]
 total_distance = output["routes"][0]["legs"][0]["distance"]["text"]
 total_duration = output["routes"][0]["legs"][0]["duration"]["text"]
 
-for direction_step in range(num_direction_steps): # recording information about each direction step
+for direction_step in range(num_direction_steps):  # recording information about each direction step
     text_direction_steps.append(output["routes"][0]["legs"][0]["steps"][direction_step]["html_instructions"])
     text_direction_durations.append(output["routes"][0]["legs"][0]["steps"][direction_step]["duration"]["text"])
     text_direction_distances.append(output["routes"][0]["legs"][0]["steps"][direction_step]["distance"]["text"])
