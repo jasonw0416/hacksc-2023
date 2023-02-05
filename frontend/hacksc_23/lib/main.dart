@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_sms/flutter_sms.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:telephony/telephony.dart';
+import 'dart:convert';
 
 const List<String> phoneNumber = ['8447443520'];
 const double _kItemExtent = 30.0;
@@ -14,8 +15,10 @@ const List<String> _transType = <String>[
   'Bicycling',
   'Transit'
 ];
-const Color mainColor = Color.fromARGB(255, 122, 102, 255);
-const Color tintedWhite = Color.fromARGB(16, 0, 0, 0);
+const Color mainColor = Color.fromARGB(255, 255, 85, 146);
+const Color tintedWhite = Color.fromARGB(255, 57, 57, 62);
+const Color darkColor = Color.fromARGB(255, 18, 12, 32);
+const Color darkishColor = Color.fromARGB(255, 39, 38, 42);
 void main() {
   runApp(const App());
 }
@@ -27,7 +30,9 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return const CupertinoApp(
       theme: CupertinoThemeData(
-          brightness: Brightness.light, primaryColor: mainColor),
+          brightness: Brightness.dark,
+          primaryColor: mainColor,
+          scaffoldBackgroundColor: darkishColor),
       home: Wrapper(),
     );
   }
@@ -48,20 +53,98 @@ class _WrapperState extends State<Wrapper> {
 
   TextEditingController startPointController = TextEditingController();
   TextEditingController destinationController = TextEditingController();
+  final Widget _defaultDirections = Container(
+    padding: const EdgeInsets.only(top: 50),
+    height: 300,
+    child: Image.asset(
+      'assets/images/starpathlogo.png',
+      // height: 50,
+    ),
+  );
+  Widget _directions = Text('');
 
-  Widget parseDirections() {
-    return Text('');
+  parseDirections() {
+    if (_receivedJson == null) {
+      setState(() {
+        _directions = const Text('Error in getting directions');
+      });
+      return;
+    }
+
+    String copyJson = _receivedJson ?? '';
+    String cleanJson = copyJson
+        .trim()
+        .replaceFirst('Sent from your Twilio trial account - SOF ', '')
+        .replaceFirst('} EOF', '}');
+    if (cleanJson.isEmpty) {
+      setState(() {
+        _directions = const Text('');
+      });
+      return;
+    }
+
+    var msg = json.decode(cleanJson);
+
+    setState(() {
+      _directions = Padding(
+        padding: EdgeInsets.all(25),
+        child: Container(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Row(
+                children: [
+                  Text(
+                    '${msg['total_time']}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(' (${msg['total_dist']})',
+                      style: const TextStyle(
+                        color: Colors.white54,
+                      )),
+                ],
+              ),
+              const SizedBox(
+                height: 25,
+              ),
+              for (var step in msg['steps'])
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      '${step['direction']}',
+                      style: const TextStyle(
+                          fontSize: 22, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      '${step['dist']}',
+                      style:
+                          const TextStyle(fontSize: 16, color: Colors.white54),
+                    ),
+                    const SizedBox(
+                      height: 25,
+                    ),
+                  ],
+                ),
+            ],
+          ),
+        ),
+      );
+    });
   }
 
   /* MESSAGE LISTENING */
   final Telephony telephony = Telephony.instance;
   void _startListening() async {
-    sleep(Duration(seconds: 2));
+    sleep(Duration(seconds: 5));
     try {
       bool? permissionsGranted = await telephony.requestPhoneAndSmsPermissions;
       telephony.listenIncomingSms(
           onNewMessage: (SmsMessage message) {
             _receivedJson = message.body;
+            parseDirections();
           },
           listenInBackground: false);
     } catch (error) {}
@@ -106,6 +189,7 @@ class _WrapperState extends State<Wrapper> {
   void initState() {
     super.initState();
     _receivedJson = "";
+    _directions = _defaultDirections;
   }
 
   @override
@@ -115,6 +199,7 @@ class _WrapperState extends State<Wrapper> {
         child: Form(
           key: _formKey,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               const SizedBox(height: 75),
@@ -140,7 +225,7 @@ class _WrapperState extends State<Wrapper> {
                           ),
                           const Divider(
                             thickness: 1,
-                            color: Colors.black12,
+                            color: Colors.white24,
                           ),
 
                           /* DESTINATION */
@@ -153,10 +238,15 @@ class _WrapperState extends State<Wrapper> {
                         ],
                       ),
                     ),
-                    Row(
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: <Widget>[
                         /* TRANSPORTATION METHOD */
                         CupertinoButton(
+                          color: tintedWhite,
                           padding: const EdgeInsets.symmetric(
                             vertical: 0,
                             horizontal: 0,
@@ -190,18 +280,20 @@ class _WrapperState extends State<Wrapper> {
                             text: TextSpan(
                               children: [
                                 const WidgetSpan(
+                                    alignment: PlaceholderAlignment.middle,
                                     child: Padding(
-                                  padding:
-                                      EdgeInsets.symmetric(horizontal: 3.0),
-                                  child: Icon(
-                                    IconData(0xe1d5,
-                                        fontFamily: 'MaterialIcons'),
-                                  ),
-                                )),
+                                      padding:
+                                          EdgeInsets.symmetric(horizontal: 9),
+                                      child: Icon(
+                                        IconData(0xe1d5,
+                                            fontFamily: 'MaterialIcons'),
+                                        color: mainColor,
+                                      ),
+                                    )),
                                 TextSpan(
                                   text: _transType[_selectedTransType],
                                   style: const TextStyle(
-                                    color: mainColor,
+                                    color: Colors.white,
                                     fontSize: 18,
                                   ),
                                 ),
@@ -219,35 +311,49 @@ class _WrapperState extends State<Wrapper> {
               ),
               /* NAVIGATION DIRECTIONS BOX */
               Expanded(
-                child: SingleChildScrollView(
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      color: tintedWhite,
-                    ),
-                    child: parseDirections(),
-                      style: TextStyle(color: Colors.black),
-                    ),
+                child: Container(
+                  color: darkColor,
+                  width: 100,
+                  child: SingleChildScrollView(
+                    child: _directions,
                   ),
                 ),
               ),
               const SizedBox(height: 25),
 
               /* SUBMIT DIRECTIONS FORM */
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  CupertinoButton.filled(
-                    onPressed: () {
-                      // BUILD JSON
-                      String json =
-                          '{"start": "${startPointController.text}", "destination": "${destinationController.text}", "mode": "${_transType[_selectedTransType].toLowerCase()}"}';
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 25),
+                child: Container(
+                  decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Color(0xff6201C3), Color(0xffDC5A84)],
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                      ),
+                      borderRadius: BorderRadius.all(Radius.circular(12))),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      CupertinoButton(
+                        onPressed: () {
+                          // BUILD JSON
+                          String json =
+                              '{"start": "${startPointController.text}", "destination": "${destinationController.text}", "mode": "${_transType[_selectedTransType].toLowerCase()}"}';
 
-                      _pushToText(json, phoneNumber);
-                      _startListening();
-                    },
-                    child: const Text('Find Directions'),
+                          _pushToText(json, phoneNumber);
+                          _directions = _defaultDirections;
+                          _startListening();
+                        },
+                        child: const Text(
+                          'Find Directions',
+                          style: TextStyle(
+                              color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
               const SizedBox(height: 15),
             ],
