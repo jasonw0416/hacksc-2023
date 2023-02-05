@@ -69,7 +69,7 @@ def find_directions(origin_loc, dest_loc, transportation_mode):
                 "status": "LOCATION_NOT_FOUND"
             }
 
-            json_object = "SOF " + json.dumps(dict, indent=4) + " EOF"
+            json_object = json.dumps(dict)
 
             return json_object
 
@@ -105,26 +105,25 @@ def find_directions(origin_loc, dest_loc, transportation_mode):
         dict["start"] = origin_loc
         dict["dest"] = dest_loc
         dict["mode"] = transportation_mode
-        dict["total_dist"] = total_distance
-        dict["total_time"] = total_duration
+        dict["t_dist"] = total_distance
+        dict["t_time"] = total_duration
 
         dict["steps"] = []
         for text_direction_idx in range(len(text_direction_steps)):
             step = {}
-            step["dist"] = text_direction_distances[text_direction_idx]
-            step["direction"] = text_direction_steps[text_direction_idx]
-            step["time"] = text_direction_durations[text_direction_idx]
+            step["d"] = text_direction_distances[text_direction_idx]
+            step["v"] = text_direction_steps[text_direction_idx]
             dict["steps"].append(step)
 
-        json_object = "SOF " + json.dumps(dict, indent=4) + " EOF"
+        json_object = json.dumps(dict)
 
-        # if len(json_object) >= 1600:
-        #     overflow = {
-        #         "status" : "CHARACTER_EXCEEDED"
-        #     }
-        #     json_object = "SOF " + json.dumps(overflow) + " EOF"
-        #     print(json_object)
-        #     return json_object
+        if len(json_object) >= 1520:
+            overflow = {
+                "status" : "CHARACTER_EXCEEDED"
+            }
+            json_object = json.dumps(overflow)
+            print(json_object)
+            return json_object
 
         print(json_object)
 
@@ -133,7 +132,7 @@ def find_directions(origin_loc, dest_loc, transportation_mode):
         exception = {
             "status": "MAP_EXCEPTION"
         }
-        json_object = "SOF " + json.dumps(exception) + " EOF"
+        json_object = json.dumps(exception)
         print(json_object)
         return json_object
 

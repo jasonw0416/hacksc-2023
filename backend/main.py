@@ -30,6 +30,7 @@ def sms_reply():
         #             resp.message(output[1500*i:1500*(i+1)])
         # else:
         #     resp.message(output)
+        # resp.message(output)
 
 
         body = request.form.get('Body')
@@ -44,20 +45,21 @@ def sms_reply():
                 "status" : "EMPTY_INPUT"
             }
 
-            json_object = "SOF " + json.dumps(dict) + " EOF"
+            json_object = json.dumps(dict)
             resp.message(json_object)
         else:
             output = gmap.find_directions(start, dest, mode)
 
-            if (len(output) >= 1600):
-                for i in range((len(output) // 1500 + 1)):
-                    if (1500 * (i + 1) >= len(output)):
-                        resp.message(output[1500 * i:])
-                    else:
-                        resp.message(output[1500 * i:1500 * (i + 1)])
-                    time.sleep(0.2)
-            else:
-                resp.message(output)
+            # if (len(output) >= 1600):
+            #     for i in range((len(output) // 1500 + 1)):
+            #         if (1500 * (i + 1) >= len(output)):
+            #             resp.message(output[1500 * i:])
+            #         else:
+            #             resp.message(output[1500 * i:1500 * (i + 1)])
+            #         time.sleep(0.2)
+            # else:
+            #     resp.message(output)
+            resp.message(output)
 
         return str(resp)
 
@@ -66,7 +68,7 @@ def sms_reply():
             "status": "MAIN_EXCEPTION"
         }
 
-        json_object = "SOF " + json.dumps(dict) + " EOF"
+        json_object = json.dumps(dict)
         resp.message(json_object)
 
         return json_object
