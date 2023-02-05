@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "hacksc_23" "\0"
+            VALUE "FileDescription", "starpath" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "hacksc_23" "\0"
+            VALUE "InternalName", "starpath" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2023 com.example. All rights reserved." "\0"
             VALUE "OriginalFilename", "hacksc_23.exe" "\0"
-            VALUE "ProductName", "hacksc_23" "\0"
+            VALUE "ProductName", "starpath" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

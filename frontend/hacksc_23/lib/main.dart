@@ -1,8 +1,10 @@
+import 'dart:io';
 import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sms/flutter_sms.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:telephony/telephony.dart';
 
 const List<String> phoneNumber = ['8447443520'];
 const double _kItemExtent = 30.0;
@@ -14,7 +16,9 @@ const List<String> _transType = <String>[
 ];
 const Color mainColor = Color.fromARGB(255, 122, 102, 255);
 const Color tintedWhite = Color.fromARGB(16, 0, 0, 0);
-void main() => runApp(const App());
+void main() {
+  runApp(const App());
+}
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -39,10 +43,31 @@ class Wrapper extends StatefulWidget {
 class _WrapperState extends State<Wrapper> {
   int _selectedTransType = 0;
   final _formKey = GlobalKey<FormState>();
+  String? _receivedJson = "";
+  // SmsQuery query = SmsQuery();
 
   TextEditingController startPointController = TextEditingController();
   TextEditingController destinationController = TextEditingController();
 
+  Widget parseDirections() {
+    return Text('');
+  }
+
+  /* MESSAGE LISTENING */
+  final Telephony telephony = Telephony.instance;
+  void _startListening() async {
+    sleep(Duration(seconds: 2));
+    try {
+      bool? permissionsGranted = await telephony.requestPhoneAndSmsPermissions;
+      telephony.listenIncomingSms(
+          onNewMessage: (SmsMessage message) {
+            _receivedJson = message.body;
+          },
+          listenInBackground: false);
+    } catch (error) {}
+  }
+
+  /* MESSAGE SENDING */
   Future<void> _pushToText(String message, List<String> recipients) async {
     try {
       if (await Permission.sms.request().isGranted) {
@@ -75,6 +100,12 @@ class _WrapperState extends State<Wrapper> {
                 child: child,
               ),
             ));
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _receivedJson = "";
   }
 
   @override
@@ -154,9 +185,6 @@ class _WrapperState extends State<Wrapper> {
                             ),
                           ),
                           // This displays the selected destination name.
-                          // prefixIcon: Icon(
-                          //   IconData(0xe1d5, fontFamily: 'MaterialIcons'),
-                          // ),
                           alignment: Alignment.centerLeft,
                           child: RichText(
                             text: TextSpan(
@@ -191,9 +219,14 @@ class _WrapperState extends State<Wrapper> {
               ),
               /* NAVIGATION DIRECTIONS BOX */
               Expanded(
-                child: Container(
-                  decoration: const BoxDecoration(
-                    color: tintedWhite,
+                child: SingleChildScrollView(
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      color: tintedWhite,
+                    ),
+                    child: parseDirections(),
+                      style: TextStyle(color: Colors.black),
+                    ),
                   ),
                 ),
               ),
@@ -210,6 +243,7 @@ class _WrapperState extends State<Wrapper> {
                           '{"start": "${startPointController.text}", "destination": "${destinationController.text}", "mode": "${_transType[_selectedTransType].toLowerCase()}"}';
 
                       _pushToText(json, phoneNumber);
+                      _startListening();
                     },
                     child: const Text('Find Directions'),
                   ),
