@@ -4,6 +4,7 @@ import os
 import json
 from dotenv import load_dotenv
 from backend import google_maps_directions as gmap
+import time
 
 app = Flask(__name__)
 
@@ -20,11 +21,18 @@ def sms_reply():
     resp = MessagingResponse()
 
     try:
+        # output = gmap.find_directions("USC", "UCLA", "driving")
+        # if (len(output) >= 1600):
+        #     for i in range ((len(output) // 1500+1)):
+        #         if (1500*(i+1) >= len(output)):
+        #             resp.message(output[1500*i:])
+        #         else:
+        #             resp.message(output[1500*i:1500*(i+1)])
+        # else:
+        #     resp.message(output)
 
-        # resp.message(gmap.find_directions("3096 McClintock Ave, Los Angeles", "3010 S Figueroa St, Los Angeles", "walking"))
 
         body = request.form.get('Body')
-
         maps = json.loads(body)
 
         start = maps['start']
@@ -36,20 +44,20 @@ def sms_reply():
                 "status" : "EMPTY_INPUT"
             }
 
-            json_object = json.dumps(dict)
+            json_object = "SOF " + json.dumps(dict) + " EOF"
             resp.message(json_object)
         else:
             output = gmap.find_directions(start, dest, mode)
 
-            resp.message(output)
-
-        # if body == "HELLO":
-        #     resp.message("WHYYYY???")
-        # else:
-        #     resp.message("WOW")
-
-        # Add a message
-        # resp.message("HI!")
+            if (len(output) >= 1600):
+                for i in range((len(output) // 1500 + 1)):
+                    if (1500 * (i + 1) >= len(output)):
+                        resp.message(output[1500 * i:])
+                    else:
+                        resp.message(output[1500 * i:1500 * (i + 1)])
+                    time.sleep(0.2)
+            else:
+                resp.message(output)
 
         return str(resp)
 
@@ -58,7 +66,7 @@ def sms_reply():
             "status": "MAIN_EXCEPTION"
         }
 
-        json_object = json.dumps(dict)
+        json_object = "SOF " + json.dumps(dict) + " EOF"
         resp.message(json_object)
 
         return json_object
