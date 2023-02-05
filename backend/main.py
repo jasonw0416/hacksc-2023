@@ -48,10 +48,11 @@ def sms_reply():
             resp.message(json_object)
         else:
             output = gmap.find_directions(start, dest, mode)
+            output = output.replace('\n', ' ').replace('\r', '') # replace useless chars
 
-            if (len(output) >= 1600):
+            if len(output) >= 1600:
                 for i in range((len(output) // 1500 + 1)):
-                    if (1500 * (i + 1) >= len(output)):
+                    if 1500 * (i + 1) >= len(output):
                         resp.message(output[1500 * i:])
                     else:
                         resp.message(output[1500 * i:1500 * (i + 1)])
