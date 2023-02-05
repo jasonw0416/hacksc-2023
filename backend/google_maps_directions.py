@@ -24,8 +24,6 @@ def find_directions(origin_loc, dest_loc, transportation_mode):
         ##############
         ## ENCODING ##
         ##############
-        # file = open('directions_output.html', 'w')
-        # text_directions = []
         text_direction_steps = []
         text_direction_durations = []
         text_direction_distances = []
@@ -56,7 +54,6 @@ def find_directions(origin_loc, dest_loc, transportation_mode):
         ## REQUEST ##
         #############
         response = requests.request("GET", maps_req_url, headers=headers, data=payload)
-        # print(response.text)
 
         #############
         ## PARSING ##
@@ -72,14 +69,13 @@ def find_directions(origin_loc, dest_loc, transportation_mode):
                 "status": "LOCATION_NOT_FOUND"
             }
 
-            json_object = json.dumps(dict, indent=4)
+            json_object = json.dumps(dict)
 
             return json_object
 
         num_direction_steps = len(output["routes"][0]["legs"][0]["steps"])  # num of total directions
         # ^^ IndexError: list index out of range if theres an error!
 
-        travel_mode = output["routes"][0]["legs"][0]["steps"][0]["travel_mode"]
         total_distance = output["routes"][0]["legs"][0]["distance"]["text"]
         total_duration = output["routes"][0]["legs"][0]["duration"]["text"]
 
@@ -91,24 +87,14 @@ def find_directions(origin_loc, dest_loc, transportation_mode):
         #################
         ## File Output ##
         #################
-        # file.write('<h1>' + "Travel Directions" + '</h1>')
-        # file.write('<small><em>' + "Traveling by: " + travel_mode + '<em></small>')
-        # file.write('<h4><em>' + "Total Trip Distance: " + total_distance + '<em></h4>')
-        # file.write('<h4><em>' + "Total Trip Duration: " + total_duration + '<em></h4>')
 
         for text_direction_idx in range(len(text_direction_steps)):
             text_direction_steps[text_direction_idx] = text_direction_steps[text_direction_idx].replace("<b>", "")
             text_direction_steps[text_direction_idx] = text_direction_steps[text_direction_idx].replace("</b>", "")
             text_direction_steps[text_direction_idx] = text_direction_steps[text_direction_idx].replace("<div style=\"font-size:0.9em\">", ". ")
             text_direction_steps[text_direction_idx] = text_direction_steps[text_direction_idx].replace("</div>", "")
-        #     file.write('<p>'
-        #                + str(text_direction_idx + 1) + ". "
-        #                + "<" + text_direction_distances[text_direction_idx] + "> "
-        #                + text_direction_steps[text_direction_idx]
-        #                + " ~ " + text_direction_durations[text_direction_idx]
-        #                + '<p>')
-        #
-        # file.close()
+            text_direction_steps[text_direction_idx] = text_direction_steps[text_direction_idx].replace("<wbr/>", "")
+
 
         #################
         ## JSON Object ##
@@ -119,20 +105,19 @@ def find_directions(origin_loc, dest_loc, transportation_mode):
         dict["start"] = origin_loc
         dict["dest"] = dest_loc
         dict["mode"] = transportation_mode
-        dict["total_dist"] = total_distance
-        dict["total_time"] = total_duration
+        dict["t_dist"] = total_distance
+        dict["t_time"] = total_duration
 
         dict["steps"] = []
         for text_direction_idx in range(len(text_direction_steps)):
             step = {}
-            step["dist"] = text_direction_distances[text_direction_idx]
-            step["direction"] = text_direction_steps[text_direction_idx]
-            step["time"] = text_direction_durations[text_direction_idx]
+            step["d"] = text_direction_distances[text_direction_idx]
+            step["v"] = text_direction_steps[text_direction_idx]
             dict["steps"].append(step)
 
-        json_object = json.dumps(dict, indent=4)
+        json_object = json.dumps(dict)
 
-        if len(json_object) >= 1600:
+        if len(json_object) >= 1520:
             overflow = {
                 "status" : "CHARACTER_EXCEEDED"
             }
