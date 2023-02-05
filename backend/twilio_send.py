@@ -1,10 +1,14 @@
 from twilio.base.exceptions import TwilioRestException
 from twilio.rest import Client
+import os
+from dotenv import load_dotenv
+load_dotenv()
+TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
 
 # Your Account SID from twilio.com/console
 account_sid = "ACf97f59a4fd24c6f630c588cea3f7a68c"
 # Your Auth Token from twilio.com/console
-auth_token  = "3a0280a6c90780d2def86447303a83fd"
+auth_token = TWILIO_AUTH_TOKEN
 
 client = Client(account_sid, auth_token)
 
