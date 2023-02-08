@@ -1,4 +1,4 @@
-# hacksc-2023
+# Starpath
 
 🏅 Winner of HackSC 2023 Global Impact Vertical
 
